@@ -1,5 +1,5 @@
-/*global jsmb */
-(function () {
+/*global jsmb, exports */
+(function (exports) {
 	"use strict";
 
 
@@ -9,7 +9,7 @@
 	 * @param {string} id
 	 * @constructor
 	 */
-	jsmb.data.Source = function (instance, id) {
+	exports.Source = function (instance, id) {
 		/** @type {Object} */
 		this.instance = instance;
 		/** @type {string} */
@@ -20,7 +20,7 @@
 	 * Get instance
 	 * @returns {Object}
 	 */
-	jsmb.data.Source.prototype.getInstance = function () {
+	exports.Source.prototype.getInstance = function () {
 		return this.instance;
 	};
 
@@ -28,8 +28,8 @@
 	 * Get id
 	 * @returns {string}
 	 */
-	jsmb.data.Source.prototype.getId = function () {
+	exports.Source.prototype.getId = function () {
 		return this.id;
 	};
 
-}());
+}(typeof exports === 'undefined' ? jsmb.data : exports));

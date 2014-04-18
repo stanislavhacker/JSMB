@@ -1,5 +1,5 @@
-/*global jsmb, MESSAGE:true */
-(function () {
+/*global jsmb, exports */
+(function (exports) {
 	"use strict";
 
 	/**
@@ -9,8 +9,9 @@
 	 * @param {function(message: jsmb.data.Message): boolean} handler
 	 * @constructor
 	 */
-	jsmb.bus.Lisener = function (all, who, handler) {
+	exports.Lisener = function (all, who, handler) {
 
+		/** @type {jsmb.data.Source}*/
 		this.who = who;
 		this.handler = handler;
 
@@ -21,7 +22,7 @@
 	 * Get who
 	 * @returns {jsmb.data.Source}
 	 */
-	jsmb.bus.Lisener.prototype.getWho = function () {
+	exports.Lisener.prototype.getWho = function () {
 		return this.who;
 	};
 
@@ -29,7 +30,7 @@
 	 * @private
 	 * @param {map.<string>} all
 	 */
-	jsmb.bus.Lisener.prototype.insert = function (all) {
+	exports.Lisener.prototype.insert = function (all) {
 		var who = this.who;
 
 		//if not exists
@@ -40,4 +41,4 @@
 		all[who.id].push(this);
 	};
 
-}());
+}(typeof exports === 'undefined' ? jsmb.bus : exports));

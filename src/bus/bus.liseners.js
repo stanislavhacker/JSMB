@@ -1,5 +1,5 @@
-/*global jsmb, MESSAGE:true */
-(function () {
+/*global jsmb, exports */
+(function (exports) {
 	"use strict";
 
 
@@ -55,7 +55,7 @@
 	 * Liseners
 	 * @constructor
 	 */
-	jsmb.bus.Liseners = function () {
+	exports.Liseners = function () {
 		/** @type {map.<string>}*/
 		this.liseners = {};
 	};
@@ -66,8 +66,8 @@
 	 * @param {function(message: jsmb.data.Message): boolean} handler
 	 * @return {jsmb.bus.Lisener}
 	 */
-	jsmb.bus.Liseners.prototype.add = function (who, handler) {
-		return new jsmb.bus.Lisener(this.liseners, who, handler);
+	exports.Liseners.prototype.add = function (who, handler) {
+		return new exports.Lisener(this.liseners, who, handler);
 	};
 
 	/**
@@ -75,7 +75,7 @@
 	 * @param {jsmb.data.Message} message
 	 * @return {Array.<jsmb.data.Source>}
 	 */
-	jsmb.bus.Liseners.prototype.message = function (message) {
+	exports.Liseners.prototype.message = function (message) {
 		var to = message.to(),
 			destinations = to.get(),
 			receivers = [],
@@ -109,7 +109,7 @@
 	 * @param {jsmb.data.Destination} destination
 	 * @returns {Array.<jsmb.data.Source>}
 	 */
-	jsmb.bus.Liseners.prototype.sendToAll = function (message, destination) {
+	exports.Liseners.prototype.sendToAll = function (message, destination) {
 		var self = this,
 			receivers = [];
 		//iterate all
@@ -129,7 +129,7 @@
 	 * @param {jsmb.data.Destination} destination
 	 * @returns {Array.<jsmb.data.Source>}
 	 */
-	jsmb.bus.Liseners.prototype.sendToInstance = function (message, destination) {
+	exports.Liseners.prototype.sendToInstance = function (message, destination) {
 		var self = this,
 			receivers = [],
 			instance = destination.getInstance();
@@ -152,7 +152,7 @@
 	 * @param {jsmb.data.Destination} destination
 	 * @returns {Array.<jsmb.data.Source>}
 	 */
-	jsmb.bus.Liseners.prototype.sendToSpecific = function (message, destination) {
+	exports.Liseners.prototype.sendToSpecific = function (message, destination) {
 		var self = this,
 			receivers = [],
 			id = destination.getId(),
@@ -175,10 +175,10 @@
 	 * @param {jsmb.data.Destination} destination
 	 * @param {jsmb.bus.Lisener} lisener
 	 */
-	jsmb.bus.Liseners.prototype.acknowledge = function (message, destination, lisener) {
+	exports.Liseners.prototype.acknowledge = function (message, destination, lisener) {
 		if (destination.getDeliveryAs() === jsmb.enum.DELIVERY_TYPE.NORMAL) {
 			message.ack(lisener.getWho());
 		}
 	};
 
-}());
+}(typeof exports === 'undefined' ? jsmb.bus : exports));

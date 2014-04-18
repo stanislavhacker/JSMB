@@ -1,5 +1,5 @@
-/*global jsmb */
-(function () {
+/*global jsmb, exports */
+(function (exports) {
 	"use strict";
 
 
@@ -7,7 +7,7 @@
 	 * Destinations
 	 * @constructor
 	 */
-	jsmb.data.Destinations = function () {
+	exports.Destinations = function () {
 		/** @type {Array<jsmb.data.Destination>}*/
 		this.destinations = [];
 	};
@@ -16,7 +16,7 @@
 	 * Add new destionation
 	 * @param {jsmb.data.Destination} destination
 	 */
-	jsmb.data.Destinations.prototype.add = function (destination) {
+	exports.Destinations.prototype.add = function (destination) {
 		this.destinations.push(destination);
 	};
 
@@ -24,8 +24,8 @@
 	 * Get destinations
 	 * @return {Array.<jsmb.data.Destination>}
 	 */
-	jsmb.data.Destinations.prototype.get = function () {
+	exports.Destinations.prototype.get = function () {
 		return this.destinations;
 	};
 
-}());
+}(typeof exports === 'undefined' ? jsmb.data : exports));

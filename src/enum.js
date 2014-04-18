@@ -1,12 +1,12 @@
-/*global jsmb */
-(function () {
+/*global jsmb, exports */
+(function (exports) {
 	"use strict";
 
 	/**
 	 * Message type
 	 * @enum
 	 */
-	jsmb.enum.MESSAGE_TYPE = {
+	exports.MESSAGE_TYPE = {
 		ALL: "all",
 		INSTANCES: "instances",
 		SPECIFIC: "specific",
@@ -17,7 +17,7 @@
 	 * Message state
 	 * @enum
 	 */
-	jsmb.enum.MESSAGE_STATE = {
+	exports.MESSAGE_STATE = {
 		NEW: "new",
 		KILLED: "killed",
 		SUCCESS: "success"
@@ -27,7 +27,7 @@
 	 * Delivery type
 	 * @enum
 	 */
-	jsmb.enum.DELIVERY_TYPE = {
+	exports.DELIVERY_TYPE = {
 		NORMAL: "normal",
 		HIDDEN: "hidden"
 	};
@@ -36,8 +36,8 @@
 	 * Error
 	 * @enum
 	 */
-	jsmb.enum.ERROR = {
+	exports.ERROR = {
 		INVALID_DESTINATION: "Invalid destination of message."
 	};
 
-}());
+}(typeof exports === 'undefined' ? jsmb.enum : exports));
