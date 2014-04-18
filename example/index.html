@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JSMB (JavaScript Message Bus)</title>
+
+    <script src="../src/jsmb.js" type="text/javascript"></script>
+    <script src="../src/enum.js" type="text/javascript"></script>
+    <script src="../src/message/data.destination.js" type="text/javascript"></script>
+    <script src="../src/message/data.destinations.js" type="text/javascript"></script>
+    <script src="../src/message/data.message.js" type="text/javascript"></script>
+    <script src="../src/message/data.source.js" type="text/javascript"></script>
+    <script src="../src/bus/bus.liseners.js" type="text/javascript"></script>
+    <script src="../src/bus/bus.lisener.js" type="text/javascript"></script>
+    <script src="../src/bus/bus.queue.js" type="text/javascript"></script>
+    <script src="../src/bus/bus.bus.js" type="text/javascript"></script>
+
+</head>
+<body>
+
+
+    <script>
+
+        (function () {
+            var source1 = new jsmb.data.Source("A", "id1"),
+                source2 = new jsmb.data.Source("B", "id2"),
+                source3 = new jsmb.data.Source("B", "id3");
+
+
+            MESSAGE.listen(source1, function(message) {
+                console.log('Message arrive into', source1.id, message.data);
+                return true;
+            });
+
+            MESSAGE.listen(source2, function(message) {
+                console.log('Message arrive into', source2.id, message.data);
+                return true;
+            });
+
+            MESSAGE.listen(source3, function(message) {
+                console.log('Message arrive into', source3.id, message.data);
+                return true;
+            });
+
+
+        }());
+
+        function invalid() {
+            var message = new jsmb.data.Message(),
+                    source = new jsmb.data.Source("C", "id3");
+
+            message.from(source);
+            message.to().add(new jsmb.data.Destination());
+            message.what({ test: Math.random() * 10});
+            MESSAGE.send(message);
+        }
+
+        function send(instance, id, ttl) {
+            var message = new jsmb.data.Message(),
+                source = new jsmb.data.Source("C", "id3");
+
+            message.from(source);
+            message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.SPECIFIC, jsmb.enum.DELIVERY_TYPE.NORMAL, instance, id));
+            message.what({ test: Math.random() * 10});
+            message.lifetime(ttl);
+            MESSAGE.send(message);
+        }
+
+        function sendInstance(instance, ttl) {
+            var message = new jsmb.data.Message(),
+                source = new jsmb.data.Source("C", "id3");
+
+            message.from(source);
+            message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.INSTANCES, jsmb.enum.DELIVERY_TYPE.NORMAL, instance));
+            message.what({ test: Math.random() * 10});
+            message.lifetime(ttl);
+            MESSAGE.send(message);
+        }
+
+        function sendAll(ttl) {
+            var message = new jsmb.data.Message(),
+                source = new jsmb.data.Source("C", "id3");
+
+            message.from(source);
+            message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.ALL, jsmb.enum.DELIVERY_TYPE.NORMAL));
+            message.what({ test: Math.random() * 10});
+            message.lifetime(ttl);
+            MESSAGE.send(message);
+        }
+
+        function sendMore() {
+            var message = new jsmb.data.Message(),
+                source = new jsmb.data.Source("C", "id3");
+
+            message.from(source);
+            message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.SPECIFIC, jsmb.enum.DELIVERY_TYPE.NORMAL, "A", "id1"));
+            message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.SPECIFIC, jsmb.enum.DELIVERY_TYPE.NORMAL, "B", "id3"));
+            message.what({ test: Math.random() * 10});
+            MESSAGE.send(message);
+        }
+
+        function sendHidden() {
+            var message = new jsmb.data.Message(),
+                source = new jsmb.data.Source("C", "id3");
+
+            message.from(source);
+            message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.SPECIFIC, jsmb.enum.DELIVERY_TYPE.NORMAL, "A", "id1"));
+            message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.SPECIFIC, jsmb.enum.DELIVERY_TYPE.HIDDEN, "B", "id3"));
+            message.what({ test: Math.random() * 10});
+            MESSAGE.send(message);
+        }
+
+    </script>
+
+    <button onclick="send('A', 'id1', 15)">Send message to A: id1</button>
+    <br />
+    <button onclick="send('B', 'id2', 15)">Send message to B: id2</button>
+    <br />
+    <button onclick="send('B', 'id3', 15)">Send message to B: id3</button>
+    <br />
+
+    <button onclick="send('0', '_', 15)">Send message to none-existing (15 TTL)</button>
+    <br />
+    <button onclick="send('0', '_', 50)">Send message to none-existing (50 TTL)</button>
+    <br />
+
+    <button onclick="sendInstance('A', 15)">Send message to A</button>
+    <br />
+    <button onclick="sendInstance('B', 15)">Send message to B</button>
+    <br />
+
+    <button onclick="sendAll(15)">Send to all</button>
+    <br />
+
+    <button onclick="invalid()">Send invalid</button>
+    <br />
+
+    <button onclick="sendMore()">Send to A: id1 and B: id3</button>
+    <br />
+
+    <button onclick="sendHidden()">Send to A: id1 and hidden B: id3</button>
+    <br />
+
+</body>
+</html>
