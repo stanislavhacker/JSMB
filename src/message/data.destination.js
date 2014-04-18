@@ -11,16 +11,12 @@
 	 * @constructor
 	 */
 	jsmb.data.Destination = function (type, deliveryAs, instance, id) {
-		//noinspection JSUnusedGlobalSymbols
 		/** @enum {jsmb.enum.MESSAGE_TYPE}*/
 		this.type = type || jsmb.enum.MESSAGE_TYPE.NONE;
-		//noinspection JSUnusedGlobalSymbols
 		/** @enum {jsmb.enum.DELIVERY_TYPE}*/
 		this.deliveryAs = deliveryAs || jsmb.enum.DELIVERY_TYPE.NORMAL;
-		//noinspection JSUnusedGlobalSymbols
 		/** @type {Object} */
 		this.instance = instance || null;
-		//noinspection JSUnusedGlobalSymbols
 		/** @type {string} */
 		this.id = id || null;
 	};

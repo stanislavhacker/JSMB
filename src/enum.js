@@ -14,6 +14,16 @@
 	};
 
 	/**
+	 * Message state
+	 * @enum
+	 */
+	jsmb.enum.MESSAGE_STATE = {
+		NEW: "new",
+		KILLED: "killed",
+		SUCCESS: "success"
+	};
+
+	/**
 	 * Delivery type
 	 * @enum
 	 */

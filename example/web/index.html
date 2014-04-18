@@ -3,16 +3,16 @@
 <head>
     <title>JSMB (JavaScript Message Bus)</title>
 
-    <script src="../src/jsmb.js" type="text/javascript"></script>
-    <script src="../src/enum.js" type="text/javascript"></script>
-    <script src="../src/message/data.destination.js" type="text/javascript"></script>
-    <script src="../src/message/data.destinations.js" type="text/javascript"></script>
-    <script src="../src/message/data.message.js" type="text/javascript"></script>
-    <script src="../src/message/data.source.js" type="text/javascript"></script>
-    <script src="../src/bus/bus.liseners.js" type="text/javascript"></script>
-    <script src="../src/bus/bus.lisener.js" type="text/javascript"></script>
-    <script src="../src/bus/bus.queue.js" type="text/javascript"></script>
-    <script src="../src/bus/bus.bus.js" type="text/javascript"></script>
+    <script src="../../src/jsmb.js" type="text/javascript"></script>
+    <script src="../../src/enum.js" type="text/javascript"></script>
+    <script src="../../src/message/data.destination.js" type="text/javascript"></script>
+    <script src="../../src/message/data.destinations.js" type="text/javascript"></script>
+    <script src="../../src/message/data.message.js" type="text/javascript"></script>
+    <script src="../../src/message/data.source.js" type="text/javascript"></script>
+    <script src="../../src/bus/bus.liseners.js" type="text/javascript"></script>
+    <script src="../../src/bus/bus.lisener.js" type="text/javascript"></script>
+    <script src="../../src/bus/bus.queue.js" type="text/javascript"></script>
+    <script src="../../src/bus/bus.bus.js" type="text/javascript"></script>
 
 </head>
 <body>
@@ -25,24 +25,35 @@
                 source2 = new jsmb.data.Source("B", "id2"),
                 source3 = new jsmb.data.Source("B", "id3");
 
-
             MESSAGE.listen(source1, function(message) {
-                console.log('Message arrive into', source1.id, message.data);
+                console.log('Arrive     ', 'Destination:', source1.id, 'Message:', message.data);
                 return true;
             });
 
             MESSAGE.listen(source2, function(message) {
-                console.log('Message arrive into', source2.id, message.data);
+                console.log('Arrive     ', 'Destination:', source2.id, 'Message:', message.data);
                 return true;
             });
 
             MESSAGE.listen(source3, function(message) {
-                console.log('Message arrive into', source3.id, message.data);
+                console.log('Arrive     ', 'Destination:', source3.id, 'Message:', message.data);
                 return true;
             });
 
 
         }());
+
+        function callbacks(message) {
+            message.onSuccess = function (message, receivers) {
+                console.log('Success    ', 'Receivers count: ' + receivers.length, 'Message:', message.what());
+            };
+            message.onAck = function (message, who) {
+                console.log('Ack        ', 'Source:', who);
+            };
+            message.onDie = function (message) {
+                console.log('Die after   ' + message.age() + 'ms', 'Message:', message.what());
+            }
+        }
 
         function invalid() {
             var message = new jsmb.data.Message(),
@@ -51,6 +62,7 @@
             message.from(source);
             message.to().add(new jsmb.data.Destination());
             message.what({ test: Math.random() * 10});
+            callbacks(message);
             MESSAGE.send(message);
         }
 
@@ -62,6 +74,7 @@
             message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.SPECIFIC, jsmb.enum.DELIVERY_TYPE.NORMAL, instance, id));
             message.what({ test: Math.random() * 10});
             message.lifetime(ttl);
+            callbacks(message);
             MESSAGE.send(message);
         }
 
@@ -73,6 +86,7 @@
             message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.INSTANCES, jsmb.enum.DELIVERY_TYPE.NORMAL, instance));
             message.what({ test: Math.random() * 10});
             message.lifetime(ttl);
+            callbacks(message);
             MESSAGE.send(message);
         }
 
@@ -84,6 +98,7 @@
             message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.ALL, jsmb.enum.DELIVERY_TYPE.NORMAL));
             message.what({ test: Math.random() * 10});
             message.lifetime(ttl);
+            callbacks(message);
             MESSAGE.send(message);
         }
 
@@ -95,6 +110,7 @@
             message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.SPECIFIC, jsmb.enum.DELIVERY_TYPE.NORMAL, "A", "id1"));
             message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.SPECIFIC, jsmb.enum.DELIVERY_TYPE.NORMAL, "B", "id3"));
             message.what({ test: Math.random() * 10});
+            callbacks(message);
             MESSAGE.send(message);
         }
 
@@ -106,6 +122,7 @@
             message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.SPECIFIC, jsmb.enum.DELIVERY_TYPE.NORMAL, "A", "id1"));
             message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.SPECIFIC, jsmb.enum.DELIVERY_TYPE.HIDDEN, "B", "id3"));
             message.what({ test: Math.random() * 10});
+            callbacks(message);
             MESSAGE.send(message);
         }
 

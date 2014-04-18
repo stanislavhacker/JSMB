@@ -8,16 +8,60 @@
 	 * @constructor
 	 */
 	jsmb.data.Message = function () {
-		/** @type {Date}*/
-		this.date = new Date();
-		/** @type {jsmb.data.Source}*/
+		/**
+		 * @private
+		 * @type {Date}
+		 **/
+		this.createdDate = new Date();
+		/**
+		 * @private
+		 * @type {Date}
+		 **/
+		this.killedDate = new Date();
+		/**
+		 * @private
+		 * @type {Date}
+		 **/
+		this.successDate = new Date();
+
+		/**
+		 * @private
+		 * @type {jsmb.enum.MESSAGE_STATE}
+		 * */
+		this.state = jsmb.enum.MESSAGE_STATE.NEW;
+
+		/**
+		 * @private
+		 * @type {jsmb.data.Source}
+		 * */
 		this.source = null;
-		/** @type {jsmb.data.Destinations}*/
+		/**
+		 * @private
+		 * @type {jsmb.data.Destinations}
+		 * */
 		this.destinations = new jsmb.data.Destinations();
-		/** @type {Object}*/
+		/**
+		 * @private
+		 * @type {Object}
+		 * */
 		this.data = null;
-		/** @type {number}*/
+		/**
+		 * @private
+		 * @type {number}
+		 * */
 		this.ttl = 15;
+
+		/** @type {function(message: jsmb.data.Message)}*/
+		this.onDie = null;
+		this.onDie = function (message) {};
+
+		/** @type {function(message: jsmb.data.Message, source: jsmb.data.Source)}*/
+		this.onAck = null;
+		this.onAck = function (message, source) {};
+
+		/** @type {function(message: jsmb.data.Message, receivers: Array.<jsmb.data.Source>)}*/
+		this.onSuccess = null;
+		this.onSuccess = function (message, receivers) {};
 	};
 
 	/**
@@ -39,11 +83,56 @@
 	};
 
 	/**
-	 * When
+	 * Created
 	 * @returns {Date}
 	 */
-	jsmb.data.Message.prototype.when = function () {
-		return this.date;
+	jsmb.data.Message.prototype.created = function () {
+		return this.createdDate;
+	};
+
+	/**
+	 * Killed
+	 * @returns {Date}
+	 */
+	jsmb.data.Message.prototype.killed = function () {
+		return this.killedDate;
+	};
+
+	/**
+	 * Serviced
+	 * @returns {Date}
+	 */
+	jsmb.data.Message.prototype.serviced = function () {
+		return this.successDate;
+	};
+
+	/**
+	 * Age
+	 * @returns {number} Age in ms
+	 */
+	jsmb.data.Message.prototype.age = function () {
+		var state = this.state;
+
+		//for killed state
+		if (state === jsmb.enum.MESSAGE_STATE.KILLED) {
+			return this.killedDate.getTime() - this.createdDate.getTime();
+		}
+
+		//for success state
+		if (state === jsmb.enum.MESSAGE_STATE.SUCCESS) {
+			return this.successDate.getTime() - this.createdDate.getTime();
+		}
+
+		//for new message
+		return (new Date().getTime() - this.createdDate.getTime());
+	};
+
+	/**
+	 * Status
+	 * @returns {jsmb.enum.MESSAGE_STATE} Status of message
+	 */
+	jsmb.data.Message.prototype.status = function () {
+		return this.state;
 	};
 
 	/**
@@ -56,7 +145,7 @@
 
 	/**
 	 * What
-	 * @param {Object} data
+	 * @param {Object=} data
 	 * @returns {Object}
 	 */
 	jsmb.data.Message.prototype.what = function (data) {
@@ -75,8 +164,9 @@
 	 * Die
 	 */
 	jsmb.data.Message.prototype.die = function () {
-		var time = new Date().getTime();
-		console.log('Message die after ' + (time - this.date.getTime()) + 'ms', this);
+		this.killedDate = new Date();
+		this.state = jsmb.enum.MESSAGE_STATE.KILLED;
+		this.onDie(this);
 	};
 
 	/**
@@ -84,7 +174,7 @@
 	 * @param {jsmb.data.Source} who
 	 */
 	jsmb.data.Message.prototype.ack = function (who) {
-		console.log('Message ack', who);
+		this.onAck(this, who);
 	};
 
 	/**
@@ -92,7 +182,9 @@
 	 * @param {Array.<jsmb.data.Source>} receivers
 	 */
 	jsmb.data.Message.prototype.success = function (receivers) {
-		console.log('Message success', receivers.length, this);
+		this.successDate = new Date();
+		this.state = jsmb.enum.MESSAGE_STATE.SUCCESS;
+		this.onSuccess(this, receivers);
 	};
 
 }());
