@@ -3,6 +3,8 @@
 <head>
     <title>JSMB (JavaScript Message Bus)</title>
 
+    <script src="../../libraries/promise.min.js" type="text/javascript"></script>
+
     <script src="../../src/jsmb.js" type="text/javascript"></script>
     <script src="../../src/enum.js" type="text/javascript"></script>
     <script src="../../src/message/data.destination.js" type="text/javascript"></script>
@@ -21,22 +23,22 @@
     <script>
 
         (function () {
-            var source1 = new jsmb.data.Source("A", "id1"),
-                source2 = new jsmb.data.Source("B", "id2"),
-                source3 = new jsmb.data.Source("B", "id3");
+            var source1 = new global.jsmb.data.Source("A", "id1"),
+                source2 = new global.jsmb.data.Source("B", "id2"),
+                source3 = new global.jsmb.data.Source("B", "id3");
 
-            MESSAGE.listen(source1, function(message) {
-                console.log('Arrive     ', 'Destination:', source1.id, 'Message:', message.data);
+            global.MESSAGE.listen(source1, function(message) {
+                console.log('Arrive     ', 'Destination:', source1.id, 'Message:', message.what());
                 return true;
             });
 
-            MESSAGE.listen(source2, function(message) {
-                console.log('Arrive     ', 'Destination:', source2.id, 'Message:', message.data);
+            global.MESSAGE.listen(source2, function(message) {
+                console.log('Arrive     ', 'Destination:', source2.id, 'Message:', message.what());
                 return true;
             });
 
-            MESSAGE.listen(source3, function(message) {
-                console.log('Arrive     ', 'Destination:', source3.id, 'Message:', message.data);
+            global.MESSAGE.listen(source3, function(message) {
+                console.log('Arrive     ', 'Destination:', source3.id, 'Message:', message.what());
                 return true;
             });
 
@@ -45,85 +47,99 @@
 
         function callbacks(message) {
             message.onSuccess = function (message, receivers) {
-                console.log('Success    ', 'Receivers count: ' + receivers.length, 'Message:', message.what());
+                console.log('Success    ', 'Receivers count: ' + receivers.length, 'Message:', message.what(), 'Age:', message.age());
             };
             message.onAck = function (message, who) {
-                console.log('Ack        ', 'Source:', who);
+                console.log('Ack        ', 'Source:', who, 'Age:', message.age());
             };
             message.onDie = function (message) {
-                console.log('Die after   ' + message.age() + 'ms', 'Message:', message.what());
+                console.log('Die after   ' + message.age() + 'ms', 'Message:', message.what(), 'Age:', message.age());
             }
         }
 
         function invalid() {
-            var message = new jsmb.data.Message(),
-                    source = new jsmb.data.Source("C", "id3");
+            var message = new global.jsmb.data.Message(),
+                    source = new global.jsmb.data.Source("C", "id3");
 
             message.from(source);
-            message.to().add(new jsmb.data.Destination());
+            message.to().add(new global.jsmb.data.Destination(null, null));
             message.what({ test: Math.random() * 10});
             callbacks(message);
-            MESSAGE.send(message);
+            global.MESSAGE.send(message);
         }
 
         function send(instance, id, ttl) {
-            var message = new jsmb.data.Message(),
-                source = new jsmb.data.Source("C", "id3");
+            var message = new global.jsmb.data.Message(),
+                source = new global.jsmb.data.Source("C", "id3");
 
             message.from(source);
-            message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.SPECIFIC, jsmb.enum.DELIVERY_TYPE.NORMAL, instance, id));
+            message.to().add(new global.jsmb.data.Destination(global.jsmb.enum.MESSAGE_TYPE.SPECIFIC, global.jsmb.enum.DELIVERY_TYPE.NORMAL, instance, id));
             message.what({ test: Math.random() * 10});
             message.lifetime(ttl);
             callbacks(message);
-            MESSAGE.send(message);
+            global.MESSAGE.send(message);
         }
 
         function sendInstance(instance, ttl) {
-            var message = new jsmb.data.Message(),
-                source = new jsmb.data.Source("C", "id3");
+            var message = new global.jsmb.data.Message(),
+                source = new global.jsmb.data.Source("C", "id3");
 
             message.from(source);
-            message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.INSTANCES, jsmb.enum.DELIVERY_TYPE.NORMAL, instance));
+            message.to().add(new global.jsmb.data.Destination(global.jsmb.enum.MESSAGE_TYPE.INSTANCES, global.jsmb.enum.DELIVERY_TYPE.NORMAL, instance));
             message.what({ test: Math.random() * 10});
             message.lifetime(ttl);
             callbacks(message);
-            MESSAGE.send(message);
+            global.MESSAGE.send(message);
         }
 
         function sendAll(ttl) {
-            var message = new jsmb.data.Message(),
-                source = new jsmb.data.Source("C", "id3");
+            var message = new global.jsmb.data.Message(),
+                source = new global.jsmb.data.Source("C", "id3");
 
             message.from(source);
-            message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.ALL, jsmb.enum.DELIVERY_TYPE.NORMAL));
+            message.to().add(new global.jsmb.data.Destination(global.jsmb.enum.MESSAGE_TYPE.ALL, global.jsmb.enum.DELIVERY_TYPE.NORMAL));
             message.what({ test: Math.random() * 10});
             message.lifetime(ttl);
             callbacks(message);
-            MESSAGE.send(message);
+            global.MESSAGE.send(message);
         }
 
         function sendMore() {
-            var message = new jsmb.data.Message(),
-                source = new jsmb.data.Source("C", "id3");
+            var message = new global.jsmb.data.Message(),
+                source = new global.jsmb.data.Source("C", "id3");
 
             message.from(source);
-            message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.SPECIFIC, jsmb.enum.DELIVERY_TYPE.NORMAL, "A", "id1"));
-            message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.SPECIFIC, jsmb.enum.DELIVERY_TYPE.NORMAL, "B", "id3"));
+            message.to().add(new global.jsmb.data.Destination(global.jsmb.enum.MESSAGE_TYPE.SPECIFIC, global.jsmb.enum.DELIVERY_TYPE.NORMAL, "A", "id1"));
+            message.to().add(new global.jsmb.data.Destination(global.jsmb.enum.MESSAGE_TYPE.SPECIFIC, global.jsmb.enum.DELIVERY_TYPE.NORMAL, "B", "id3"));
             message.what({ test: Math.random() * 10});
             callbacks(message);
-            MESSAGE.send(message);
+            global.MESSAGE.send(message);
         }
 
         function sendHidden() {
-            var message = new jsmb.data.Message(),
-                source = new jsmb.data.Source("C", "id3");
+            var message = new global.jsmb.data.Message(),
+                source = new global.jsmb.data.Source("C", "id3");
 
             message.from(source);
-            message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.SPECIFIC, jsmb.enum.DELIVERY_TYPE.NORMAL, "A", "id1"));
-            message.to().add(new jsmb.data.Destination(jsmb.enum.MESSAGE_TYPE.SPECIFIC, jsmb.enum.DELIVERY_TYPE.HIDDEN, "B", "id3"));
+            message.to().add(new global.jsmb.data.Destination(global.jsmb.enum.MESSAGE_TYPE.SPECIFIC, global.jsmb.enum.DELIVERY_TYPE.NORMAL, "A", "id1"));
+            message.to().add(new global.jsmb.data.Destination(global.jsmb.enum.MESSAGE_TYPE.SPECIFIC, global.jsmb.enum.DELIVERY_TYPE.HIDDEN, "B", "id3"));
             message.what({ test: Math.random() * 10});
             callbacks(message);
-            MESSAGE.send(message);
+            global.MESSAGE.send(message);
+        }
+
+        function sendTo(array) {
+            var i,
+                message = new global.jsmb.data.Message(),
+                source = new global.jsmb.data.Source("C", "id3");
+
+            message.from(source);
+            for (i = 0; i < array.length; i++) {
+                message.to().add(new global.jsmb.data.Destination(global.jsmb.enum.MESSAGE_TYPE.SPECIFIC, global.jsmb.enum.DELIVERY_TYPE.NORMAL, array[i].instance, array[i].id));
+            }
+            message.what({ test: Math.random() * 10});
+            callbacks(message);
+            global.MESSAGE.send(message);
         }
 
     </script>
@@ -155,6 +171,11 @@
     <br />
 
     <button onclick="sendHidden()">Send to A: id1 and hidden B: id3</button>
+    <br />
+
+    <br /><br /><br /><br />
+
+    <button onclick="sendTo([{instance: 'A', id: 'id1'}, {instance: 'S', id: 'id99'}])">Send to A: id1 and SERVER S: id99</button>
     <br />
 
 </body>

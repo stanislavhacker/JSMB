@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dependencies>
+    <lib name="promise.min.js" source="https://github.com/stackp/promisejs" />
+</dependencies>

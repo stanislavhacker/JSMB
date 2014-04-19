@@ -1,30 +1,30 @@
-/*global jsmb, exports */
-(function (exports) {
+/*global jsmb, global, promise, require */
+(function () {
 	"use strict";
 
 	/**
 	 * Queue object
 	 * @constructor
 	 */
-	exports.Queue = function () {
-		/** @type {Array.<jsmb.data.Message>}*/
+	global.jsmb.bus.Queue = function () {
+		/** @type {Array.<global.jsmb.data.Message>}*/
 		this.queue = [];
 	};
 
 	/**
 	 * Push message
-	 * @param {jsmb.data.Message} message
+	 * @param {global.jsmb.data.Message} message
 	 */
-	exports.Queue.prototype.push = function (message) {
+	global.jsmb.bus.Queue.prototype.push = function (message) {
 		this.queue.push(message);
 	};
 
 	/**
 	 * Retrieve message
-	 * @returns {jsmb.data.Message}
+	 * @returns {global.jsmb.data.Message}
 	 */
-	exports.Queue.prototype.pop = function () {
+	global.jsmb.bus.Queue.prototype.pop = function () {
 		return this.queue.shift();
 	};
 
-}(typeof exports === 'undefined' ? jsmb.bus : exports));
+}());

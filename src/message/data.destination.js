@@ -1,20 +1,20 @@
-/*global jsmb, exports */
-(function (exports) {
+/*global jsmb, global */
+(function () {
 	"use strict";
 
 	/**
 	 * Destination
-	 * @param {jsmb.enum.MESSAGE_TYPE} type
-	 * @param {jsmb.enum.DELIVERY_TYPE} deliveryAs
+	 * @param {global.jsmb.enum.MESSAGE_TYPE=} type
+	 * @param {global.jsmb.enum.DELIVERY_TYPE=} deliveryAs
 	 * @param {Object=} instance
 	 * @param {string=} id
 	 * @constructor
 	 */
-	exports.Destination = function (type, deliveryAs, instance, id) {
-		/** @enum {jsmb.enum.MESSAGE_TYPE}*/
-		this.type = type || jsmb.enum.MESSAGE_TYPE.NONE;
-		/** @enum {jsmb.enum.DELIVERY_TYPE}*/
-		this.deliveryAs = deliveryAs || jsmb.enum.DELIVERY_TYPE.NORMAL;
+	global.jsmb.data.Destination = function (type, deliveryAs, instance, id) {
+		/** @enum {global.jsmb.enum.MESSAGE_TYPE}*/
+		this.type = type || global.jsmb.enum.MESSAGE_TYPE.NONE;
+		/** @enum {global.jsmb.enum.DELIVERY_TYPE}*/
+		this.deliveryAs = deliveryAs || global.jsmb.enum.DELIVERY_TYPE.NORMAL;
 		/** @type {Object} */
 		this.instance = instance || null;
 		/** @type {string} */
@@ -22,18 +22,26 @@
 	};
 
 	/**
-	 * Get type
-	 * @returns {jsmb.enum.MESSAGE_TYPE}
+	 * Clone
+	 * @returns {global.jsmb.data.Destination}
 	 */
-	exports.Destination.prototype.getType = function () {
+	global.jsmb.data.Destination.prototype.clone = function () {
+		return new global.jsmb.data.Destination(this.type, this.deliveryAs, this.instance, this.id);
+	};
+
+	/**
+	 * Get type
+	 * @returns {global.jsmb.enum.MESSAGE_TYPE}
+	 */
+	global.jsmb.data.Destination.prototype.getType = function () {
 		return this.type;
 	};
 
 	/**
 	 * Get delivery as
-	 * @returns {jsmb.enum.DELIVERY_TYPE}
+	 * @returns {global.jsmb.enum.DELIVERY_TYPE}
 	 */
-	exports.Destination.prototype.getDeliveryAs = function () {
+	global.jsmb.data.Destination.prototype.getDeliveryAs = function () {
 		return this.deliveryAs;
 	};
 
@@ -41,7 +49,7 @@
 	 * Get instance
 	 * @returns {Object}
 	 */
-	exports.Destination.prototype.getInstance = function () {
+	global.jsmb.data.Destination.prototype.getInstance = function () {
 		return this.instance;
 	};
 
@@ -49,8 +57,8 @@
 	 * Get id
 	 * @returns {string}
 	 */
-	exports.Destination.prototype.getId = function () {
+	global.jsmb.data.Destination.prototype.getId = function () {
 		return this.id;
 	};
 
-}(typeof exports === 'undefined' ? jsmb.data : exports));
+}());

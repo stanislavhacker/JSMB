@@ -1,25 +1,25 @@
-/*global jsmb, MESSAGE:true, exports */
-(function (exports) {
+/*global jsmb, MESSAGE:true, global */
+(function () {
 	"use strict";
 
-	var queue = new exports.Queue(),
-		liseners = new exports.Liseners();
+	var queue = new global.jsmb.bus.Queue(),
+		liseners = new global.jsmb.bus.Liseners();
 
 	/**
 	 * Bus
 	 * @constructor
 	 */
-	exports.Bus = function () {
-		/** @type {number} */
-		this.messageTimeout = 2000;
+	global.jsmb.bus.Bus = function () {
+		/** @type {global.jsmb.server.Server}*/
+		this.listener = null;
 	};
 
 	/**
 	 * Send message
-	 * @param {jsmb.data.Message} message
+	 * @param {global.jsmb.data.Message} message
 	 * @returns {boolean} success
 	 */
-	exports.Bus.prototype.send = function (message) {
+	global.jsmb.bus.Bus.prototype.send = function (message) {
 		queue.push(message);
 		this.knock();
 		return true;
@@ -27,62 +27,78 @@
 
 	/**
 	 * Resend message
-	 * @param {jsmb.data.Message} message
+	 * @param {global.jsmb.data.Message} message
 	 */
-	exports.Bus.prototype.resend = function (message) {
+	global.jsmb.bus.Bus.prototype.resend = function (message) {
 		var self = this;
 		message.again();
-		if (message.ttl === 0) {
+		if (!message.lifetime()) {
 			message.die();
 		} else {
 			setTimeout(function () {
 				self.send(message);
-			}, this.messageTimeout / message.ttl);
+			}, global.jsmb.setting.messageTimeout / message.lifetime());
 		}
 	};
 
 	/**
 	 * Listen on messages
-	 * @param {jsmb.data.Source} who
-	 * @param {function(message: jsmb.data.Message): boolean} handler
-	 * @return {jsmb.bus.Lisener}
+	 * @param {global.jsmb.data.Source} who
+	 * @param {function(message: global.jsmb.data.Message): boolean} handler
+	 * @return {global.jsmb.bus.Lisener}
 	 */
-	exports.Bus.prototype.listen = function (who, handler) {
+	global.jsmb.bus.Bus.prototype.listen = function (who, handler) {
 		return liseners.add(who, handler);
 	};
 
 	/**
 	 * Knock on queue
 	 */
-	exports.Bus.prototype.knock = function () {
+	global.jsmb.bus.Bus.prototype.knock = function () {
 		var self = this,
-			receivers,
 			message;
 
 		setTimeout(function () {
 			message = queue.pop();
-			receivers = liseners.message(message);
-			if (receivers.length === 0) {
-				self.resend(message);
-			} else {
-				self.done(message, receivers);
-			}
+			liseners.message(message).then(function (error, receivers) {
+				if (receivers.length === 0 || error) {
+					self.resend(message);
+				} else {
+					self.done(message, receivers);
+				}
+			});
 		}, 0);
 	};
 
 	/**
 	 * @private
 	 * Done
-	 * @param {jsmb.data.Message} message
-	 * @param {Array.<jsmb.data.Source>} receivers
+	 * @param {global.jsmb.data.Message} message
+	 * @param {Array.<global.jsmb.data.Source>} receivers
 	 */
-	exports.Bus.prototype.done = function (message, receivers) {
+	global.jsmb.bus.Bus.prototype.done = function (message, receivers) {
 		message.success(receivers);
 	};
 
 
+	//////////////////////////////////////////////////////////////////
+	////////////////////// SERVER FCE ////////////////////////////////
+	//////////////////////////////////////////////////////////////////
 
-
+	/**
+	 * Init server
+	 */
+	global.jsmb.bus.Bus.prototype.server = function () {
+		var server = global.jsmb.isServer;
+		if (server) {
+			//create new lisener on server
+			this.listener = new global.jsmb.server.Server(liseners);
+			this.listener.createServer();
+		} else {
+			//throw erro if call on client
+			throw global.jsmb.enum.ERROR.SERVER_METHOD_ONLY;
+		}
+	};
 
 
 
@@ -93,6 +109,6 @@
 	 * Static class of bus
 	 * @type {jsmb.bus.Bus}
 	 */
-	MESSAGE = new exports.Bus();
+	global.MESSAGE = new global.jsmb.bus.Bus();
 
-}(typeof exports === 'undefined' ? jsmb.bus : exports));
+}());

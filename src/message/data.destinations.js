@@ -1,5 +1,5 @@
-/*global jsmb, exports */
-(function (exports) {
+/*global jsmb, global */
+(function () {
 	"use strict";
 
 
@@ -7,25 +7,43 @@
 	 * Destinations
 	 * @constructor
 	 */
-	exports.Destinations = function () {
-		/** @type {Array<jsmb.data.Destination>}*/
+	global.jsmb.data.Destinations = function () {
+		/** @type {Array<global.jsmb.data.Destination>}*/
 		this.destinations = [];
 	};
 
 	/**
-	 * Add new destionation
-	 * @param {jsmb.data.Destination} destination
+	 * Clone
+	 * @returns {global.jsmb.data.Destinations}
 	 */
-	exports.Destinations.prototype.add = function (destination) {
+	global.jsmb.data.Destinations.prototype.clone = function () {
+		var clone = new global.jsmb.data.Destinations(),
+			destinations = this.destinations,
+			destionation,
+			i;
+
+		for (i = 0; i < destinations.length; i++) {
+			destionation = destinations[i].clone ? destinations[i].clone() : new global.jsmb.data.Destination().clone.apply(destinations[i]);
+			clone.add(destionation);
+		}
+
+		return clone;
+	};
+
+	/**
+	 * Add new destionation
+	 * @param {global.jsmb.data.Destination} destination
+	 */
+	global.jsmb.data.Destinations.prototype.add = function (destination) {
 		this.destinations.push(destination);
 	};
 
 	/**
 	 * Get destinations
-	 * @return {Array.<jsmb.data.Destination>}
+	 * @return {Array.<global.jsmb.data.Destination>}
 	 */
-	exports.Destinations.prototype.get = function () {
+	global.jsmb.data.Destinations.prototype.get = function () {
 		return this.destinations;
 	};
 
-}(typeof exports === 'undefined' ? jsmb.data : exports));
+}());

@@ -1,18 +1,18 @@
-/*global require*/
-var http = require("http"),
-	messages = require("../../src/jsmb"),
-	server;
+/*global require, global, console*/
+require("../../src/jsmb");
+
+//setting
+
+//init
+global.MESSAGE.server();
 
 (function () {
 	"use strict";
 
-	server = http.createServer(function(request, response) {
-		var a = messages;
-		console.log('a');
-		response.writeHead(200, {"Content-Type" : "text/html"});
-		response.write("Hello World");
-		response.end();
+	var source = new global.jsmb.data.Source("S", "id99");
+	global.MESSAGE.listen(source, function (message) {
+		console.log('received', message.from(), message);
+		return true;
 	});
-	server.listen(1010);
 
 }());

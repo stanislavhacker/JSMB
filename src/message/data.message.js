@@ -1,5 +1,5 @@
-/*global jsmb, exports */
-(function (exports) {
+/*global jsmb, global */
+(function () {
 	"use strict";
 
 
@@ -7,7 +7,7 @@
 	 * Message
 	 * @constructor
 	 */
-	exports.Message = function () {
+	global.jsmb.data.Message = function () {
 		/**
 		 * @private
 		 * @type {Date}
@@ -26,20 +26,20 @@
 
 		/**
 		 * @private
-		 * @type {jsmb.enum.MESSAGE_STATE}
+		 * @type {global.jsmb.enum.MESSAGE_STATE}
 		 * */
-		this.state = jsmb.enum.MESSAGE_STATE.NEW;
+		this.state = global.jsmb.enum.MESSAGE_STATE.NEW;
 
 		/**
 		 * @private
-		 * @type {jsmb.data.Source}
+		 * @type {global.jsmb.data.Source}
 		 * */
 		this.source = null;
 		/**
 		 * @private
-		 * @type {jsmb.data.Destinations}
+		 * @type {global.jsmb.data.Destinations}
 		 * */
-		this.destinations = new jsmb.data.Destinations();
+		this.destinations = new global.jsmb.data.Destinations();
 		/**
 		 * @private
 		 * @type {Object}
@@ -51,34 +51,56 @@
 		 * */
 		this.ttl = 15;
 
-		/** @type {function(message: jsmb.data.Message)}*/
+		/** @type {function(message: global.jsmb.data.Message)}*/
 		this.onDie = null;
 		this.onDie = function (message) {};
 
-		/** @type {function(message: jsmb.data.Message, source: jsmb.data.Source)}*/
+		/** @type {function(message: global.jsmb.data.Message, source: global.jsmb.data.Source)}*/
 		this.onAck = null;
 		this.onAck = function (message, source) {};
 
-		/** @type {function(message: jsmb.data.Message, receivers: Array.<jsmb.data.Source>)}*/
+		/** @type {function(message: global.jsmb.data.Message, receivers: Array.<global.jsmb.data.Source>)}*/
 		this.onSuccess = null;
 		this.onSuccess = function (message, receivers) {};
 	};
 
 	/**
-	 * Set or get from
-	 * @param {jsmb.data.Source=} from
-	 * @returns {jsmb.data.Source}
+	 * Clone
+	 * @returns {global.jsmb.data.Message}
 	 */
-	exports.Message.prototype.from = function (from) {
+	global.jsmb.data.Message.prototype.clone = function () {
+		var clone = new global.jsmb.data.Message();
+
+		clone.createdDate = this.createdDate;
+		clone.killedDate = this.killedDate;
+		clone.successDate = this.successDate;
+		clone.state = this.state;
+		clone.source = this.source.clone ? this.source.clone() : new global.jsmb.data.Source().clone.apply(this.source);
+		clone.destinations = this.destinations.clone ? this.destinations.clone() : new global.jsmb.data.Destinations().clone.apply(this.destinations);
+		clone.data = this.data;
+		clone.ttl = this.ttl;
+		clone.onDie = this.onDie || function (message) {};
+		clone.onAck = this.onAck || function (message, source) {};
+		clone.onSuccess = this.onSuccess || function (message, receivers) {};
+
+		return clone;
+	};
+
+	/**
+	 * Set or get from
+	 * @param {global.jsmb.data.Source=} from
+	 * @returns {global.jsmb.data.Source}
+	 */
+	global.jsmb.data.Message.prototype.from = function (from) {
 		this.source = this.source || from;
 		return this.source;
 	};
 
 	/**
 	 * Get destinations
-	 * @returns {jsmb.data.Destinations}
+	 * @returns {global.jsmb.data.Destinations}
 	 */
-	exports.Message.prototype.to = function () {
+	global.jsmb.data.Message.prototype.to = function () {
 		return this.destinations;
 	};
 
@@ -86,7 +108,7 @@
 	 * Created
 	 * @returns {Date}
 	 */
-	exports.Message.prototype.created = function () {
+	global.jsmb.data.Message.prototype.created = function () {
 		return this.createdDate;
 	};
 
@@ -94,7 +116,7 @@
 	 * Killed
 	 * @returns {Date}
 	 */
-	exports.Message.prototype.killed = function () {
+	global.jsmb.data.Message.prototype.killed = function () {
 		return this.killedDate;
 	};
 
@@ -102,7 +124,7 @@
 	 * Serviced
 	 * @returns {Date}
 	 */
-	exports.Message.prototype.serviced = function () {
+	global.jsmb.data.Message.prototype.serviced = function () {
 		return this.successDate;
 	};
 
@@ -110,16 +132,16 @@
 	 * Age
 	 * @returns {number} Age in ms
 	 */
-	exports.Message.prototype.age = function () {
+	global.jsmb.data.Message.prototype.age = function () {
 		var state = this.state;
 
 		//for killed state
-		if (state === jsmb.enum.MESSAGE_STATE.KILLED) {
+		if (state === global.jsmb.enum.MESSAGE_STATE.KILLED) {
 			return this.killedDate.getTime() - this.createdDate.getTime();
 		}
 
 		//for success state
-		if (state === jsmb.enum.MESSAGE_STATE.SUCCESS) {
+		if (state === global.jsmb.enum.MESSAGE_STATE.SUCCESS) {
 			return this.successDate.getTime() - this.createdDate.getTime();
 		}
 
@@ -129,18 +151,20 @@
 
 	/**
 	 * Status
-	 * @returns {jsmb.enum.MESSAGE_STATE} Status of message
+	 * @returns {global.jsmb.enum.MESSAGE_STATE} Status of message
 	 */
-	exports.Message.prototype.status = function () {
+	global.jsmb.data.Message.prototype.status = function () {
 		return this.state;
 	};
 
 	/**
 	 * Lifetime
-	 * @param {number} ttl
+	 * @param {number=} ttl
+	 * @return {number}
 	 */
-	exports.Message.prototype.lifetime = function (ttl) {
-		this.ttl = ttl;
+	global.jsmb.data.Message.prototype.lifetime = function (ttl) {
+		this.ttl = ttl || this.ttl;
+		return this.ttl;
 	};
 
 	/**
@@ -148,7 +172,7 @@
 	 * @param {Object=} data
 	 * @returns {Object}
 	 */
-	exports.Message.prototype.what = function (data) {
+	global.jsmb.data.Message.prototype.what = function (data) {
 		this.data = this.data || data;
 		return this.data;
 	};
@@ -156,35 +180,35 @@
 	/**
 	 * Again
 	 */
-	exports.Message.prototype.again = function () {
+	global.jsmb.data.Message.prototype.again = function () {
 		this.ttl--;
 	};
 
 	/**
 	 * Die
 	 */
-	exports.Message.prototype.die = function () {
+	global.jsmb.data.Message.prototype.die = function () {
 		this.killedDate = new Date();
-		this.state = jsmb.enum.MESSAGE_STATE.KILLED;
+		this.state = global.jsmb.enum.MESSAGE_STATE.KILLED;
 		this.onDie(this);
 	};
 
 	/**
 	 * Ack
-	 * @param {jsmb.data.Source} who
+	 * @param {global.jsmb.data.Source} who
 	 */
-	exports.Message.prototype.ack = function (who) {
+	global.jsmb.data.Message.prototype.ack = function (who) {
 		this.onAck(this, who);
 	};
 
 	/**
 	 * Success
-	 * @param {Array.<jsmb.data.Source>} receivers
+	 * @param {Array.<global.jsmb.data.Source>} receivers
 	 */
-	exports.Message.prototype.success = function (receivers) {
+	global.jsmb.data.Message.prototype.success = function (receivers) {
 		this.successDate = new Date();
-		this.state = jsmb.enum.MESSAGE_STATE.SUCCESS;
+		this.state = global.jsmb.enum.MESSAGE_STATE.SUCCESS;
 		this.onSuccess(this, receivers);
 	};
 
-}(typeof exports === 'undefined' ? jsmb.data : exports));
+}());

@@ -1,28 +1,30 @@
-/*global jsmb, exports */
-(function (exports) {
+/*global global */
+(function () {
 	"use strict";
 
 	/**
 	 * Lisener
 	 * @param {map.<string>} all
-	 * @param {jsmb.data.Source} who
-	 * @param {function(message: jsmb.data.Message): boolean} handler
+	 * @param {global.jsmb.data.Source} who
+	 * @param {function(message: global.jsmb.data.Message): boolean} handler
 	 * @constructor
 	 */
-	exports.Lisener = function (all, who, handler) {
+	global.jsmb.bus.Lisener = function (all, who, handler) {
 
-		/** @type {jsmb.data.Source}*/
+		/** @type {global.jsmb.data.Source}*/
 		this.who = who;
+		/** @type {function(global.jsmb.data.Message): boolean}*/
 		this.handler = handler;
 
-		this.insert(all);
+		//noinspection JSUnresolvedFunction
+		this.addLisener(all);
 	};
 
 	/**
 	 * Get who
-	 * @returns {jsmb.data.Source}
+	 * @returns {global.jsmb.data.Source}
 	 */
-	exports.Lisener.prototype.getWho = function () {
+	global.jsmb.bus.Lisener.prototype.getWho = function () {
 		return this.who;
 	};
 
@@ -30,7 +32,7 @@
 	 * @private
 	 * @param {map.<string>} all
 	 */
-	exports.Lisener.prototype.insert = function (all) {
+	global.jsmb.bus.Lisener.prototype.addLisener = function (all) {
 		var who = this.who;
 
 		//if not exists
@@ -41,4 +43,4 @@
 		all[who.id].push(this);
 	};
 
-}(typeof exports === 'undefined' ? jsmb.bus : exports));
+}());

@@ -1,12 +1,12 @@
-/*global jsmb, exports */
-(function (exports) {
+/*global global */
+(function () {
 	"use strict";
 
 	/**
 	 * Message type
 	 * @enum
 	 */
-	exports.MESSAGE_TYPE = {
+	global.jsmb.enum.MESSAGE_TYPE = {
 		ALL: "all",
 		INSTANCES: "instances",
 		SPECIFIC: "specific",
@@ -17,7 +17,7 @@
 	 * Message state
 	 * @enum
 	 */
-	exports.MESSAGE_STATE = {
+	global.jsmb.enum.MESSAGE_STATE = {
 		NEW: "new",
 		KILLED: "killed",
 		SUCCESS: "success"
@@ -27,7 +27,7 @@
 	 * Delivery type
 	 * @enum
 	 */
-	exports.DELIVERY_TYPE = {
+	global.jsmb.enum.DELIVERY_TYPE = {
 		NORMAL: "normal",
 		HIDDEN: "hidden"
 	};
@@ -36,8 +36,17 @@
 	 * Error
 	 * @enum
 	 */
-	exports.ERROR = {
-		INVALID_DESTINATION: "Invalid destination of message."
+	global.jsmb.enum.ERROR = {
+		INVALID_DESTINATION: "Invalid destination of message.",
+		SERVER_METHOD_ONLY: "This method is used only on node.js server!"
 	};
 
-}(typeof exports === 'undefined' ? jsmb.enum : exports));
+	/**
+	 * Action
+	 * @enum
+	 */
+	global.jsmb.enum.ACTION = {
+		MESSAGE: "message"
+	};
+
+}());

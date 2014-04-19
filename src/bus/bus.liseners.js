@@ -1,12 +1,12 @@
-/*global jsmb, exports */
-(function (exports) {
+/*global jsmb, global, promise */
+(function () {
 	"use strict";
 
 
 	/**
 	 * Iterate
 	 * @param {map.<string>} liseners
-	 * @param {function(jsmb.bus.Lisener)} callback
+	 * @param {function(global.jsmb.bus.Lisener)} callback
 	 */
 	function iterate(liseners, callback) {
 		var instances,
@@ -16,9 +16,9 @@
 
 		for (key in liseners) {
 			if (liseners.hasOwnProperty(key)) {
-				instances = /** @type {Array.<jsmb.bus.Lisener>}*/ liseners[key];
+				instances = /** @type {Array.<global.jsmb.bus.Lisener>}*/ liseners[key];
 				for (i = 0; i < instances.length; i++) {
-					lisener = /** @type {jsmb.bus.Lisener}*/ instances[i];
+					lisener = /** @type {global.jsmb.bus.Lisener}*/ instances[i];
 					callback(lisener);
 				}
 			}
@@ -30,7 +30,7 @@
 	 * @param {map.<string>} liseners
 	 * @param {object} instance
 	 * @param {string} id
-	 * @param {function(jsmb.bus.Lisener)} callback
+	 * @param {function(global.jsmb.bus.Lisener)} callback
 	 */
 	function specific(liseners, instance, id, callback) {
 		var instances = liseners[id],
@@ -43,7 +43,7 @@
 			who = lisener.getWho();
 			if (who.getInstance() === instance && who.getId() === id) {
 				for (i = 0; i < instances.length; i++) {
-					lisener = /** @type {jsmb.bus.Lisener}*/ instances[i];
+					lisener = /** @type {global.jsmb.bus.Lisener}*/ instances[i];
 					callback(lisener);
 				}
 			}
@@ -55,28 +55,29 @@
 	 * Liseners
 	 * @constructor
 	 */
-	exports.Liseners = function () {
+	global.jsmb.bus.Liseners = function () {
 		/** @type {map.<string>}*/
 		this.liseners = {};
 	};
 
 	/**
 	 * Listen on messages
-	 * @param {jsmb.data.Source} who
-	 * @param {function(message: jsmb.data.Message): boolean} handler
-	 * @return {jsmb.bus.Lisener}
+	 * @param {global.jsmb.data.Source} who
+	 * @param {function(message: global.jsmb.data.Message): boolean} handler
+	 * @return {global.jsmb.bus.Lisener}
 	 */
-	exports.Liseners.prototype.add = function (who, handler) {
-		return new exports.Lisener(this.liseners, who, handler);
+	global.jsmb.bus.Liseners.prototype.add = function (who, handler) {
+		return new global.jsmb.bus.Lisener(this.liseners, who, handler);
 	};
 
 	/**
 	 * Message
-	 * @param {jsmb.data.Message} message
-	 * @return {Array.<jsmb.data.Source>}
+	 * @param {global.jsmb.data.Message} message
+	 * @return {promise.Promise}
 	 */
-	exports.Liseners.prototype.message = function (message) {
-		var to = message.to(),
+	global.jsmb.bus.Liseners.prototype.message = function (message) {
+		var promise = new global.jsmb.libraries.promise.Promise(),
+			to = message.to(),
 			destinations = to.get(),
 			receivers = [],
 			destination,
@@ -85,35 +86,46 @@
 		for (i = 0; i < destinations.length; i++) {
 			destination = destinations[i];
 			switch (destination.getType()) {
-				case jsmb.enum.MESSAGE_TYPE.ALL:
+				case global.jsmb.enum.MESSAGE_TYPE.ALL:
 					receivers = receivers.concat(this.sendToAll(message, destination));
 					break;
-				case jsmb.enum.MESSAGE_TYPE.INSTANCES:
+				case global.jsmb.enum.MESSAGE_TYPE.INSTANCES:
 					receivers = receivers.concat(this.sendToInstance(message, destination));
 					break;
-				case jsmb.enum.MESSAGE_TYPE.SPECIFIC:
+				case global.jsmb.enum.MESSAGE_TYPE.SPECIFIC:
 					receivers = receivers.concat(this.sendToSpecific(message, destination));
 					break;
 				default:
-					throw jsmb.enum.ERROR.INVALID_DESTINATION;
+					throw global.jsmb.enum.ERROR.INVALID_DESTINATION;
 			}
 		}
 
-		return receivers;
+		//remote
+		this.remote(message).then(function (error, remoteReceivers) {
+			if (!error) {
+				remoteReceivers = global.jsmb.data.Source.ToSourceArray(remoteReceivers);
+				receivers = receivers.concat(remoteReceivers);
+			}
+			promise.done(error, receivers);
+		});
+
+		//noinspection JSValidateTypes
+		return promise;
 	};
 
 	/**
 	 * @private
 	 * Send to all
-	 * @param {jsmb.data.Message} message
-	 * @param {jsmb.data.Destination} destination
-	 * @returns {Array.<jsmb.data.Source>}
+	 * @param {global.jsmb.data.Message} message
+	 * @param {global.jsmb.data.Destination} destination
+	 * @returns {Array.<global.jsmb.data.Source>}
 	 */
-	exports.Liseners.prototype.sendToAll = function (message, destination) {
+	global.jsmb.bus.Liseners.prototype.sendToAll = function (message, destination) {
 		var self = this,
 			receivers = [];
 		//iterate all
 		iterate(this.liseners, function (lisener) {
+			//noinspection JSUnresolvedFunction
 			if (lisener.handler(message)) {
 				self.acknowledge(message, destination, lisener);
 				receivers.push(lisener.getWho());
@@ -125,17 +137,18 @@
 	/**
 	 * @private
 	 * Send to instance
-	 * @param {jsmb.data.Message} message
-	 * @param {jsmb.data.Destination} destination
-	 * @returns {Array.<jsmb.data.Source>}
+	 * @param {global.jsmb.data.Message} message
+	 * @param {global.jsmb.data.Destination} destination
+	 * @returns {Array.<global.jsmb.data.Source>}
 	 */
-	exports.Liseners.prototype.sendToInstance = function (message, destination) {
+	global.jsmb.bus.Liseners.prototype.sendToInstance = function (message, destination) {
 		var self = this,
 			receivers = [],
 			instance = destination.getInstance();
 		//iterate all
 		iterate(this.liseners, function (lisener) {
 			if (lisener.getWho().getInstance() === instance) {
+				//noinspection JSUnresolvedFunction
 				if (lisener.handler(message)) {
 					self.acknowledge(message, destination, lisener);
 					receivers.push(lisener.getWho());
@@ -148,17 +161,18 @@
 	/**
 	 * @private
 	 * Send to specific
-	 * @param {jsmb.data.Message} message
-	 * @param {jsmb.data.Destination} destination
-	 * @returns {Array.<jsmb.data.Source>}
+	 * @param {global.jsmb.data.Message} message
+	 * @param {global.jsmb.data.Destination} destination
+	 * @returns {Array.<global.jsmb.data.Source>}
 	 */
-	exports.Liseners.prototype.sendToSpecific = function (message, destination) {
+	global.jsmb.bus.Liseners.prototype.sendToSpecific = function (message, destination) {
 		var self = this,
 			receivers = [],
 			id = destination.getId(),
 			instance = destination.getInstance();
 		//specific lisener
 		specific(this.liseners, instance, id, function (lisener) {
+			//noinspection JSUnresolvedFunction
 			if (lisener.handler(message)) {
 				self.acknowledge(message, destination, lisener);
 				receivers.push(lisener.getWho());
@@ -171,14 +185,49 @@
 	/**
 	 * @private
 	 * Acknowledge
-	 * @param {jsmb.data.Message} message
-	 * @param {jsmb.data.Destination} destination
-	 * @param {jsmb.bus.Lisener} lisener
+	 * @param {global.jsmb.data.Message} message
+	 * @param {global.jsmb.data.Destination} destination
+	 * @param {global.jsmb.bus.Lisener} lisener
 	 */
-	exports.Liseners.prototype.acknowledge = function (message, destination, lisener) {
-		if (destination.getDeliveryAs() === jsmb.enum.DELIVERY_TYPE.NORMAL) {
+	global.jsmb.bus.Liseners.prototype.acknowledge = function (message, destination, lisener) {
+		if (destination.getDeliveryAs() === global.jsmb.enum.DELIVERY_TYPE.NORMAL) {
 			message.ack(lisener.getWho());
 		}
 	};
 
-}(typeof exports === 'undefined' ? jsmb.bus : exports));
+	/**
+	 * @private
+	 * Get url
+	 * @param {global.jsmb.enum.ACTION} action
+	 * @returns {string}
+	 */
+	global.jsmb.bus.Liseners.prototype.getUrl = function (action) {
+		var setting = global.jsmb.setting;
+		return setting.protocol + "://" + setting.server + ":" + setting.port + "/" + action;
+	};
+
+	/**
+	 * @private
+	 * Push message
+	 * @param {global.jsmb.data.Message} message
+	 * @return {promise.Promise}
+	 */
+	global.jsmb.bus.Liseners.prototype.remote = function (message) {
+		var headers = {},
+			setting = global.jsmb.setting,
+			isServer = global.jsmb.isServer,
+			promise = new global.jsmb.libraries.promise.Promise();
+
+		//send on server
+		if (setting.clientOnly || isServer) {
+			promise.done(false, []);
+			//noinspection JSValidateTypes
+			return promise;
+		}
+
+		//send on server
+		headers['Content-Type'] = "text/json";
+		return global.jsmb.libraries.promise.post(this.getUrl(global.jsmb.enum.ACTION.MESSAGE), JSON.stringify(message), headers);
+	};
+
+}());

@@ -1,41 +1,75 @@
-/*global exports, require*/
-var jsmb,
-	MESSAGE;
+/*global global, require, promise*/
 
-(function (exports) {
+//in node js global is GLOBAL scope
+if (typeof global === 'undefined') {
+	window.global = {};
+}
+
+(function (global) {
 	"use strict";
 
-	var isServer = typeof require !== 'undefined';
+	var server,
+		http;
 
-	//data namespace
-	exports.data = {};
-	if (isServer) {
-		exports.data.Message = require('./message/data.message').Message;
-		exports.data.Source = require('./message/data.source').Source;
-		exports.data.Destination = require('./message/data.destination').Destination;
-		exports.data.Destinations = require('./message/data.destinations').Destinations;
-	}
+	//namespace
+	global.jsmb = {};
 
-	//enum namespace
-	exports.enum = {};
-	if (isServer) {
-		exports.enum = require('./enum');
-	}
-
-	//bus namespace
-	exports.bus = {};
-	if (isServer) {
-		exports.bus.Lisener = require('./bus/bus.lisener').Lisener;
-		exports.bus.Liseners = require('./bus/bus.liseners').Liseners;
-		exports.bus.Queue = require('./bus/bus.queue').Queue;
-		exports.bus.Bus = require('./bus/bus.bus').Bus;
-	}
+	//check if context is server
+	global.jsmb.isServer = typeof window === 'undefined';
 
 	/**
 	 * Static class of bus
-	 * @type {jsmb.bus.Bus}
+	 * @type {global.jsmb.bus.Bus}
 	 * @client
 	 */
-	MESSAGE = null;
+	global.MESSAGE = null;
 
-}(typeof exports === 'undefined' ? jsmb = {} : exports));
+	//enum namespace
+	global.jsmb.enum = {};
+	if (global.jsmb.isServer) {
+		require('./enum');
+	}
+
+	//libraries namespace
+	global.jsmb.libraries = {};
+	if (global.jsmb.isServer) {
+		//noinspection JSUnresolvedVariable
+		global.jsmb.libraries.promise = require('../libraries/promise.min').promise;
+	} else {
+		global.jsmb.libraries.promise = promise;
+	}
+
+	//data namespace
+	global.jsmb.data = {};
+	if (global.jsmb.isServer) {
+		require('./message/data.message');
+		require('./message/data.source');
+		require('./message/data.destination');
+		require('./message/data.destinations');
+	}
+
+	//bus namespace
+	global.jsmb.bus = {};
+	if (global.jsmb.isServer) {
+		require('./bus/bus.lisener');
+		require('./bus/bus.liseners');
+		require('./bus/bus.queue');
+		require('./bus/bus.bus');
+	}
+
+	//server namespace
+	global.jsmb.server = {};
+	if (global.jsmb.isServer) {
+		require('./server/server.server');
+	}
+
+	//settings
+	global.jsmb.setting = {
+		messageTimeout: 2000,
+		port: 555,
+		server: 'localhost',
+		protocol: 'http',
+		clientOnly: false
+	};
+
+}(typeof global === 'undefined' ? window.global : global));
