@@ -32,6 +32,11 @@
 
 		/**
 		 * @private
+		 * @type {Array.<global.jsmb.data.Source>}
+		 * */
+		this.acks = [];
+		/**
+		 * @private
 		 * @type {global.jsmb.data.Source}
 		 * */
 		this.source = null;
@@ -51,9 +56,9 @@
 		 * */
 		this.ttl = 15;
 
-		/** @type {function(message: global.jsmb.data.Message)}*/
+		/** @type {function(message: global.jsmb.data.Message, receivers: Array.<global.jsmb.data.Source>)}*/
 		this.onDie = null;
-		this.onDie = function (message) {};
+		this.onDie = function (message, receivers) {};
 
 		/** @type {function(message: global.jsmb.data.Message, source: global.jsmb.data.Source)}*/
 		this.onAck = null;
@@ -69,7 +74,10 @@
 	 * @returns {global.jsmb.data.Message}
 	 */
 	global.jsmb.data.Message.prototype.clone = function () {
-		var clone = new global.jsmb.data.Message();
+		var clone = new global.jsmb.data.Message(),
+			acks = this.acks,
+			ack,
+			i;
 
 		clone.createdDate = this.createdDate;
 		clone.killedDate = this.killedDate;
@@ -79,9 +87,14 @@
 		clone.destinations = this.destinations.clone ? this.destinations.clone() : new global.jsmb.data.Destinations().clone.apply(this.destinations);
 		clone.data = this.data;
 		clone.ttl = this.ttl;
-		clone.onDie = this.onDie || function (message) {};
+		clone.onDie = this.onDie || function (message, receivers) {};
 		clone.onAck = this.onAck || function (message, source) {};
 		clone.onSuccess = this.onSuccess || function (message, receivers) {};
+
+		for (i = 0; i < acks.length; i++) {
+			ack = acks[i].clone ? acks[i].clone() : new global.jsmb.data.Source().clone.apply(acks[i]);
+			clone.acks.add(ack);
+		}
 
 		return clone;
 	};
@@ -190,7 +203,7 @@
 	global.jsmb.data.Message.prototype.die = function () {
 		this.killedDate = new Date();
 		this.state = global.jsmb.enum.MESSAGE_STATE.KILLED;
-		this.onDie(this);
+		this.onDie(this, this.acks);
 	};
 
 	/**
@@ -198,7 +211,25 @@
 	 * @param {global.jsmb.data.Source} who
 	 */
 	global.jsmb.data.Message.prototype.ack = function (who) {
+		this.acks.push(who);
 		this.onAck(this, who);
+	};
+
+	/**
+	 * Served?
+	 * @param {global.jsmb.data.Source} who
+	 * @returns {boolean}
+	 */
+	global.jsmb.data.Message.prototype.served = function (who) {
+		var acks = this.acks,
+			i;
+
+		for (i = 0; i < acks.length; i++) {
+			if (acks[i].getId() === who.getId() && acks[i].getInstance() === who.getInstance()) {
+				return true;
+			}
+		}
+		return false;
 	};
 
 	/**

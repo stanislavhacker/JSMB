@@ -75,8 +75,8 @@
 	 * @param {global.jsmb.data.Message} message
 	 */
 	global.jsmb.server.Server.prototype.applyCallbacks = function (message) {
-		message.onDie = function (message) {
-			console.log('DIE', message);
+		message.onDie = function (message, receivers) {
+			console.log('DIE', message, receivers);
 		};
 		message.onAck = function (message, source) {
 			console.log('ACK', message, source);

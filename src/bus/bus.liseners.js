@@ -102,8 +102,12 @@
 
 		//remote
 		this.remote(message).then(function (error, remoteReceivers) {
-			if (!error) {
+			if (remoteReceivers) {
 				remoteReceivers = global.jsmb.data.Source.ToSourceArray(remoteReceivers);
+				for (i = 0; i < remoteReceivers.length; i++) {
+					//noinspection JSUnresolvedVariable
+					message.acks.push(remoteReceivers[i]);
+				}
 				receivers = receivers.concat(remoteReceivers);
 			}
 			promise.done(error, receivers);
@@ -126,7 +130,7 @@
 		//iterate all
 		iterate(this.liseners, function (lisener) {
 			//noinspection JSUnresolvedFunction
-			if (lisener.handler(message)) {
+			if (!message.served(lisener.getWho()) && lisener.handler(message)) {
 				self.acknowledge(message, destination, lisener);
 				receivers.push(lisener.getWho());
 			}
@@ -149,7 +153,7 @@
 		iterate(this.liseners, function (lisener) {
 			if (lisener.getWho().getInstance() === instance) {
 				//noinspection JSUnresolvedFunction
-				if (lisener.handler(message)) {
+				if (!message.served(lisener.getWho()) && lisener.handler(message)) {
 					self.acknowledge(message, destination, lisener);
 					receivers.push(lisener.getWho());
 				}
@@ -173,7 +177,7 @@
 		//specific lisener
 		specific(this.liseners, instance, id, function (lisener) {
 			//noinspection JSUnresolvedFunction
-			if (lisener.handler(message)) {
+			if (!message.served(lisener.getWho()) && lisener.handler(message)) {
 				self.acknowledge(message, destination, lisener);
 				receivers.push(lisener.getWho());
 			}

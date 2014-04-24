@@ -52,8 +52,8 @@
             message.onAck = function (message, who) {
                 console.log('Ack        ', 'Source:', who, 'Age:', message.age());
             };
-            message.onDie = function (message) {
-                console.log('Die after   ' + message.age() + 'ms', 'Message:', message.what(), 'Age:', message.age());
+            message.onDie = function (message, receivers) {
+                console.log('Die after   ' + message.age() + 'ms', 'Receivers count: ' + receivers.length, 'Message:', message.what(), 'Age:', message.age());
             }
         }
 
@@ -176,6 +176,8 @@
     <br /><br /><br /><br />
 
     <button onclick="sendTo([{instance: 'A', id: 'id1'}, {instance: 'S', id: 'id99'}])">Send to A: id1 and SERVER S: id99</button>
+    <br />
+    <button onclick="sendTo([{instance: '_', id: '0'}, {instance: 'S', id: 'id99'}])">Send to non-exists and SERVER S: id99</button>
     <br />
 
 </body>
