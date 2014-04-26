@@ -10,6 +10,11 @@
 	global.jsmb.data.Message = function () {
 		/**
 		 * @private
+		 * @type {string}
+		 **/
+		this.id = Math.random().toString(36).substring(7) + Math.random().toString(36).substring(7);
+		/**
+		 * @private
 		 * @type {Date}
 		 **/
 		this.createdDate = new Date();
@@ -79,6 +84,7 @@
 			ack,
 			i;
 
+		clone.id = this.id;
 		clone.createdDate = this.createdDate;
 		clone.killedDate = this.killedDate;
 		clone.successDate = this.successDate;
@@ -93,7 +99,7 @@
 
 		for (i = 0; i < acks.length; i++) {
 			ack = acks[i].clone ? acks[i].clone() : new global.jsmb.data.Source().clone.apply(acks[i]);
-			clone.acks.add(ack);
+			clone.acks.push(ack);
 		}
 
 		return clone;
@@ -168,6 +174,14 @@
 	 */
 	global.jsmb.data.Message.prototype.status = function () {
 		return this.state;
+	};
+
+	/**
+	 * Identifier
+	 * @returns {string}
+	 */
+	global.jsmb.data.Message.prototype.identifier = function () {
+		return this.id;
 	};
 
 	/**

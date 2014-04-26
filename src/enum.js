@@ -38,7 +38,8 @@
 	 */
 	global.jsmb.enum.ERROR = {
 		INVALID_DESTINATION: "Invalid destination of message.",
-		SERVER_METHOD_ONLY: "This method is used only on node.js server!"
+		SERVER_METHOD_ONLY: "This method is used only on node.js server!",
+		CLIENT_METHOD_ONLY: "This method is used only on browser!"
 	};
 
 	/**
@@ -46,7 +47,16 @@
 	 * @enum
 	 */
 	global.jsmb.enum.ACTION = {
-		MESSAGE: "message"
+		MESSAGE: "message",
+		CHANNEL: "channel"
+	};
+
+	/**
+	 * response type
+	 * @enum
+	 */
+	global.jsmb.enum.RESPONSE_TYPE = {
+		ACK: "ack"
 	};
 
 }());

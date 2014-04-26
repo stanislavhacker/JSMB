@@ -53,11 +53,16 @@
 
 	/**
 	 * Liseners
+	 * @param {global.jsmb.bus.Queue} queue
 	 * @constructor
 	 */
-	global.jsmb.bus.Liseners = function () {
+	global.jsmb.bus.Liseners = function (queue) {
 		/** @type {map.<string>}*/
 		this.liseners = {};
+		/** @type {global.jsmb.bus.Queue} */
+		this.queue = queue;
+		/** @type {string}*/
+		this.id = Math.random().toString(36);
 	};
 
 	/**
@@ -200,7 +205,6 @@
 	};
 
 	/**
-	 * @private
 	 * Get url
 	 * @param {global.jsmb.enum.ACTION} action
 	 * @returns {string}
@@ -231,6 +235,7 @@
 
 		//send on server
 		headers['Content-Type'] = "text/json";
+		headers['Client-Id'] = this.id;
 		return global.jsmb.libraries.promise.post(this.getUrl(global.jsmb.enum.ACTION.MESSAGE), JSON.stringify(message), headers);
 	};
 

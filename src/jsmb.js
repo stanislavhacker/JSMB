@@ -24,10 +24,25 @@ if (typeof global === 'undefined') {
 	 */
 	global.MESSAGE = null;
 
+	//settings
+	global.jsmb.setting = {
+		messageTimeout: 2000,
+		port: 555,
+		server: 'localhost',
+		protocol: 'http',
+		clientOnly: false
+	};
+
 	//enum namespace
 	global.jsmb.enum = {};
 	if (global.jsmb.isServer) {
 		require('./enum');
+	}
+
+	//response namespace
+	global.jsmb.response = {};
+	if (global.jsmb.isServer) {
+		require('./response/response.ack');
 	}
 
 	//libraries namespace
@@ -48,13 +63,10 @@ if (typeof global === 'undefined') {
 		require('./message/data.destinations');
 	}
 
-	//bus namespace
-	global.jsmb.bus = {};
+	//channel namespace
+	global.jsmb.channel = {};
 	if (global.jsmb.isServer) {
-		require('./bus/bus.lisener');
-		require('./bus/bus.liseners');
-		require('./bus/bus.queue');
-		require('./bus/bus.bus');
+		require('./channel/channel.channel');
 	}
 
 	//server namespace
@@ -63,13 +75,13 @@ if (typeof global === 'undefined') {
 		require('./server/server.server');
 	}
 
-	//settings
-	global.jsmb.setting = {
-		messageTimeout: 2000,
-		port: 555,
-		server: 'localhost',
-		protocol: 'http',
-		clientOnly: false
-	};
+	//bus namespace
+	global.jsmb.bus = {};
+	if (global.jsmb.isServer) {
+		require('./bus/bus.lisener');
+		require('./bus/bus.liseners');
+		require('./bus/bus.queue');
+		require('./bus/bus.bus');
+	}
 
 }(typeof global === 'undefined' ? window.global : global));

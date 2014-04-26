@@ -3,7 +3,7 @@
 	"use strict";
 
 	var queue = new global.jsmb.bus.Queue(),
-		liseners = new global.jsmb.bus.Liseners();
+		liseners = new global.jsmb.bus.Liseners(queue);
 
 	/**
 	 * Bus
@@ -12,6 +12,8 @@
 	global.jsmb.bus.Bus = function () {
 		/** @type {global.jsmb.server.Server}*/
 		this.listener = null;
+		/** @type {global.jsmb.channel.Channel}*/
+		this.roure = null;
 	};
 
 	/**
@@ -82,7 +84,7 @@
 
 
 	//////////////////////////////////////////////////////////////////
-	////////////////////// SERVER FCE ////////////////////////////////
+	////////////////////// SERVER ONLY FCE ///////////////////////////
 	//////////////////////////////////////////////////////////////////
 
 	/**
@@ -95,13 +97,30 @@
 			this.listener = new global.jsmb.server.Server(liseners);
 			this.listener.createServer();
 		} else {
-			//throw erro if call on client
+			//throw error if call on client
 			throw global.jsmb.enum.ERROR.SERVER_METHOD_ONLY;
 		}
 	};
 
 
+	//////////////////////////////////////////////////////////////////
+	////////////////////// CLIENT ONLY FCE ///////////////////////////
+	//////////////////////////////////////////////////////////////////
 
+	/**
+	 * Init channel
+	 */
+	global.jsmb.bus.Bus.prototype.channel = function () {
+		var server = global.jsmb.isServer;
+		if (!server) {
+			//create new channel on client
+			this.roure = new global.jsmb.channel.Channel(liseners);
+			this.roure.createChannel();
+		} else {
+			//throw error if call on server
+			throw global.jsmb.enum.ERROR.CLIENT_METHOD_ONLY;
+		}
+	};
 
 
 	//noinspection JSUndeclaredVariable
@@ -110,5 +129,12 @@
 	 * @type {jsmb.bus.Bus}
 	 */
 	global.MESSAGE = new global.jsmb.bus.Bus();
+
+	//init
+	if (global.jsmb.isServer) {
+		global.MESSAGE.server();
+	} else {
+		global.MESSAGE.channel();
+	}
 
 }());
